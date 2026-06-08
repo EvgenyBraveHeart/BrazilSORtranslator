@@ -286,7 +286,8 @@
         
         <br><br>
         <button class="btn" onclick="startConfigurator()">Начать заполнение</button>
-        <button class="btn btn-secondary" onclick="clearFormCache()">Очистить форму</button>
+        <!-- <button class="btn btn-secondary" onclick="clearFormCache()">Очистить форму</button> -->
+        <button class="btn btn-secondary hidden" id="clearCacheBtn" onclick="clearFormCache()">Очистить форму</button>
     </header>
 
     <!-- СТРАНИЦА КОНФИГУРАТОРА (СКРЫТА ПО УМОЛЧАНИЮ) -->
@@ -716,10 +717,18 @@
     }
 
     function updateCacheRestoredNotice() {
-        var notice = document.getElementById('cacheRestoredNotice');
-        if (!notice) return;
-        notice.classList.toggle('hidden', !formRestoredFromCache);
-    }
+            var notice = document.getElementById('cacheRestoredNotice');
+            var clearBtn = document.getElementById('clearCacheBtn'); // Находим нашу кнопку
+            
+            if (!notice) return;
+            
+            // Переключаем класс hidden в зависимости от того, восстановились ли данные из кэша
+            notice.classList.toggle('hidden', !formRestoredFromCache);
+            
+            if (clearBtn) {
+                clearBtn.classList.toggle('hidden', !formRestoredFromCache);
+            }
+        }
 
     function clearFormCache() {
         if (window.localStorage) {
@@ -1030,19 +1039,24 @@
     }
 
     window.addEventListener('DOMContentLoaded', function() {
-        cacheSavePaused = true;
-        try {
-            loadFormDataFromCache();
-            initFormCacheListeners();
-            initNameNormalizationListeners();
-            toggleSorTypeDetails();
-            syncOwnerName();
-            updateCacheRestoredNotice();
-            initTextareaAutoResize();
-        } finally {
-            cacheSavePaused = false;
-        }
-    });
+            cacheSavePaused = true;
+            try {
+                loadFormDataFromCache();
+                initFormCacheListeners();
+                initNameNormalizationListeners();
+                toggleSorTypeDetails();
+                syncOwnerName();
+                
+                // Сначала инициализируем высоту textarea (из прошлой правки)
+                initTextareaAutoResize(); 
+                
+                // Затем обновляем видимость плашки и кнопки на основе результата loadFormDataFromCache
+                updateCacheRestoredNotice();
+                
+            } finally {
+                cacheSavePaused = false;
+            }
+        });
 
     // Преобразование дат в текстовую форму на русском языке
     const numToTextWords = {
