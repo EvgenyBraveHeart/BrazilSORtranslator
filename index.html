@@ -110,7 +110,11 @@
             outline: none;
         }
 
-        textarea { resize: vertical; min-height: 80px; }
+        textarea {
+            min-height: 80px;
+            overflow: hidden;
+            resize: none;
+        }
         .uppercase-input { text-transform: uppercase; }
 
         .hidden { display: none; }
@@ -326,7 +330,7 @@
                     <input type="text" id="child_name" class="uppercase-input" placeholder="АННА" oninput="syncOwnerName()">
                 </div>
                 <div class="form-col">
-                    <label>Фамилия ребенка:</label>
+                    <label>Фамилия ребенка (капсом):</label>
                     <input type="text" id="child_surname" class="uppercase-input" placeholder="ИВАНОВА" oninput="syncOwnerName()">
                 </div>
             </div>
@@ -466,28 +470,44 @@
         <!-- РАЗДЕЛ 4: Прочие служебные отметки -->
         <div class="card">
             <h2>3. Служебные отметки и регистрация</h2>
-            <div class="form-row">
+            <!-- <div class="form-row">
                 <div class="form-col">
                     <label>Близнецы:</label>
                     <input type="text" id="twins" value="НЕ ЗАРЕГИСТРИРОВАНО">
                 </div>
                 <div class="form-col">
                     <label>Номер декларации о живорождении (зелёная/жёлтая справка):</label>
-                    <!-- <input type="text" id="dn_number" value="30-12345678-9"> -->
                     <input type="text" id="dn_number" class="uppercase-input" placeholder="30-12345678-9">
                 </div>
-            </div>
+            </div> -->
 
             <div class="form-row">
                 <div class="form-col">
-                    <label>Выбор даты регистрации в календаре:</label>
+                    <label>Близнецы:</label>
+                    <input type="text" id="twins" value="НЕ ЗАРЕГИСТРИРОВАНО">
+                </div>
+            </div>         
+
+            <div class="form-row">
+                <div class="form-col">
+                    <label>Дата регистрации в карторио:</label>
                     <input type="date" id="reg_date_picker" onchange="convertRegDate()">
+                    <input type="text" id="reg_date_text" placeholder="Восемнадцатое декабря две тысячи двадцать пятого года">
                 </div>
             </div>
-            <div class="form-group">
+
+            <!-- <div class="form-group">
                 <label>Дата регистрации прописью:</label>
                 <input type="text" id="reg_date_text" placeholder="Восемнадцатое декабря две тысячи двадцать пятого года">
-            </div>
+            </div> -->
+
+            <div class="form-row">
+                <div class="form-col">
+                    <label>Номер декларации о живорождении (зелёная/жёлтая справка):</label>
+                    <!-- <input type="text" id="dn_number" value="30-12345678-9"> -->
+                    <input type="text" id="dn_number" class="uppercase-input" placeholder="30-12345678-9">
+                </div>
+            </div>   
 
             <div class="form-group">
                 <label>Отметки / Внесенные записи:</label>
@@ -692,6 +712,7 @@
         document.getElementById('configuratorPage').classList.remove('hidden');
         document.getElementById('supportAuthor').classList.add('hidden');
         syncOwnerName();
+        resizeAllTextareas();
     }
 
     function updateCacheRestoredNotice() {
@@ -879,6 +900,7 @@
             updateBirthDatePartsFromPicker();
             initApostilleQrSyncState();
             syncOwnerName();
+            resizeAllTextareas();
         } catch (e) {
             console.warn('Не удалось загрузить кеш формы:', e);
         }
@@ -891,6 +913,31 @@
             el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', saveFormDataToCache);
         });
     }
+
+    function autoResizeTextarea(textarea) {
+        if (!textarea) return;
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    function resizeAllTextareas() {
+        document.querySelectorAll('textarea').forEach(autoResizeTextarea);
+    }
+
+    function initTextareaAutoResize() {
+            document.querySelectorAll('textarea').forEach(function(textarea) {
+                // Сразу задаем высоту при инициализации
+                autoResizeTextarea(textarea);
+                
+                // Вешаем обработчики на ввод текста
+                textarea.addEventListener('input', function() {
+                    autoResizeTextarea(textarea);
+                });
+                textarea.addEventListener('change', function() {
+                    autoResizeTextarea(textarea);
+                });
+            });
+        }
 
     function validateForm() {
         var invalid = [];
@@ -991,6 +1038,7 @@
             toggleSorTypeDetails();
             syncOwnerName();
             updateCacheRestoredNotice();
+            initTextareaAutoResize();
         } finally {
             cacheSavePaused = false;
         }
