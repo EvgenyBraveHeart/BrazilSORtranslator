@@ -120,6 +120,18 @@
 
         .hidden { display: none; }
         .input-error { border-color: #e74c3c; background: #fdecea; }
+        .mobile-warning {
+            display: none;
+            background: #f8d7da;
+            color: #842029;
+            border: 1px solid #f5c2c7;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin: 18px 0 0;
+            font-size: 16px;
+            line-height: 1.4;
+            text-align: center;
+        }
         
         .instructions {
             background: #fdfefe;
@@ -235,6 +247,9 @@
             body {
                 padding: 12px;
             }
+            .mobile-warning {
+                display: block;
+            }
             .container {
                 width: 100%;
                 padding: 0 6px;
@@ -332,7 +347,7 @@
 
     <!-- СТАРТОВАЯ СТРАНИЦА -->
     <header id="startPage">
-        <h1>Онлайн-конфигуратор перевода Бразильского СОР</h1>
+        <h1>Онлайн-конфигуратор перевода Бразильского свидетельства о рождении</h1>
         <p>Инструмент для автоматического и точного заполнения шаблона перевода свидетельства о рождении (Certidão de Nascimento) на русский язык без деформации структуры Word-файла.</p>
         
         <div class="author-info">
@@ -343,6 +358,10 @@
         
         <div id="cacheRestoredNotice" class="cache-notice hidden">
             Страница восстановлена из кэша. Если это были тестовые данные, очистите форму и начните заново.
+        </div>
+
+        <div class="mobile-warning">
+            Рекомендую заполнять форму с компьютера, т.к. на телефоне генерация Word-файла может работать некорректно.
         </div>
         
         <br><br>
