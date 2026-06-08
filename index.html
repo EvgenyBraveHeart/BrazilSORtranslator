@@ -230,6 +230,66 @@
             justify-content: center;
             margin-top: 18px;
         }
+        @media (max-width: 900px) {
+            body {
+                padding: 12px;
+            }
+            .container {
+                width: 100%;
+                padding: 0 6px;
+            }
+            header, .card, .support-card, .modal-box {
+                padding: 20px;
+            }
+            h1 { font-size: 22px; }
+            h2 { font-size: 17px; margin-bottom: 18px; }
+            h3 { font-size: 13px; }
+            .author-info { font-size: 13px; }
+            .form-row {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .form-col {
+                min-width: auto;
+                width: 100%;
+            }
+            .btn {
+                width: 100%;
+                padding: 14px 16px;
+            }
+            .btn-success { font-size: 16px; }
+            .support-grid {
+                grid-template-columns: 1fr;
+            }
+            .cache-notice, .instructions {
+                font-size: 13px;
+            }
+        }
+        @media (max-width: 600px) {
+            header, .card, .support-card, .modal-box {
+                padding: 16px;
+            }
+            .btn {
+                font-size: 15px;
+                padding: 12px 14px;
+            }
+            label {
+                font-size: 13px;
+            }
+            input[type="text"], select, textarea, input[type="date"], input[type="time"] {
+                font-size: 13px;
+                padding: 10px;
+            }
+            .form-row {
+                gap: 10px;
+            }
+            .support-item {
+                padding: 12px;
+            }
+            .modal-overlay {
+                padding: 12px;
+            }
+        }
         @media (max-width: 700px) {
             .support-grid {
                 grid-template-columns: 1fr;
@@ -1046,11 +1106,7 @@
                 initNameNormalizationListeners();
                 toggleSorTypeDetails();
                 syncOwnerName();
-                
-                // Сначала инициализируем высоту textarea (из прошлой правки)
                 initTextareaAutoResize(); 
-                
-                // Затем обновляем видимость плашки и кнопки на основе результата loadFormDataFromCache
                 updateCacheRestoredNotice();
                 
             } finally {
