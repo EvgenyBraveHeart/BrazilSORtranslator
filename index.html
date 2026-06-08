@@ -139,6 +139,102 @@
             margin-left: 10px;
         }
         .btn-secondary:hover { background: #707b7c; }
+        .support-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            padding: 24px;
+        }
+        .support-card h2 {
+            border-bottom: 0;
+            margin-bottom: 8px;
+            padding-bottom: 0;
+        }
+        .support-card p {
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        .support-grid {
+            display: grid;
+            gap: 14px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            margin-top: 18px;
+        }
+        .support-item {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px;
+        }
+        .support-item strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+        .support-item a {
+            color: #2980b9;
+            word-break: break-word;
+        }
+        .support-address {
+            background: #f4f6f7;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 8px;
+            overflow-wrap: anywhere;
+            padding: 8px;
+        }
+        .support-qr {
+            display: block;
+            height: 132px;
+            margin-top: 10px;
+            width: 132px;
+        }
+        .support-highlight {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(39,174,96,0.16), 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .modal-overlay {
+            align-items: center;
+            background: rgba(44,62,80,0.58);
+            display: flex;
+            inset: 0;
+            justify-content: center;
+            padding: 20px;
+            position: fixed;
+            z-index: 1000;
+        }
+        .modal-overlay.hidden { display: none; }
+        .modal-box {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.22);
+            max-width: 440px;
+            padding: 24px;
+            text-align: center;
+            width: 100%;
+        }
+        .modal-box h2 {
+            border-bottom: 0;
+            margin-bottom: 10px;
+            padding-bottom: 0;
+        }
+        .modal-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 18px;
+        }
+        @media (max-width: 700px) {
+            .support-grid {
+                grid-template-columns: 1fr;
+            }
+            .btn-secondary {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
     </style>
 
     <!-- Подключаем необходимые библиотеки для работы с DOCX прямо в браузере -->
@@ -190,6 +286,33 @@
     </header>
 
     <!-- СТРАНИЦА КОНФИГУРАТОРА (СКРЫТА ПО УМОЛЧАНИЮ) -->
+    <section id="supportAuthor" class="support-card">
+        <h2>На кофе ☕️</h2>
+        <p>Если у вас есть желание закинуть мне на кофе, то из РФ можно сделать это через CloudTips, для карт других стран это можно сделать через бота Tribute. Если удобнее криптой, ниже есть EVM кошелек и Bybit ID.</p>
+        <div class="support-grid">
+            <div class="support-item">
+                <strong>CloudTips для РФ</strong>
+                <a href="https://pay.cloudtips.ru/p/65989301" target="_blank" rel="noopener">pay.cloudtips.ru/p/65989301</a>
+            </div>
+            <div class="support-item">
+                <strong>MasterCard Tribute</strong>
+                <a href="https://t.me/tribute/app?startapp=dzdS" target="_blank" rel="noopener">t.me/tribute/app?startapp=dzdS</a>
+            </div>
+            <div class="support-item">
+                <strong>EVM кошелек</strong>
+                <div>Ethereum, BSC/BEP20, Polygon, Mantle, Optimism и другие EVM-сети</div>
+                <img class="support-qr" alt="QR код EVM кошелька" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&amp;data=0xd4A6245C9408157B9F078418a526D95d0B7879d8">
+                <div class="support-address">0xd4A6245C9408157B9F078418a526D95d0B7879d8</div>
+            </div>
+            <div class="support-item">
+                <strong>Bybit</strong>
+                <div>Bybit ID: 504051430</div>
+                <a href="https://i.bybit.com/pPabJ8e" target="_blank" rel="noopener">Pay me via this QR code</a>
+                <img class="support-qr" alt="QR код Bybit" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&amp;data=https%3A%2F%2Fi.bybit.com%2FpPabJ8e">
+            </div>
+        </div>
+    </section>
+
     <main id="configuratorPage" class="hidden">
         
 
@@ -546,6 +669,17 @@
 
 </div>
 
+<div id="supportModal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h2>Документ готов</h2>
+        <p>Если инструмент сэкономил вам время, можно отблагодарить автора кофе или любым удобным способом.</p>
+        <div class="modal-actions">
+            <button class="btn" onclick="goToSupportBlock()">Посмотреть способы</button>
+            <button class="btn btn-secondary" onclick="closeSupportModal()">Закрыть</button>
+        </div>
+    </div>
+</div>
+
 <script>
     var formRestoredFromCache = false;
     var cacheSavePaused = false;
@@ -556,6 +690,7 @@
     function startConfigurator() {
         document.getElementById('startPage').classList.add('hidden');
         document.getElementById('configuratorPage').classList.remove('hidden');
+        document.getElementById('supportAuthor').classList.add('hidden');
         syncOwnerName();
     }
 
@@ -570,6 +705,32 @@
             localStorage.removeItem('sorConfigData');
         }
         window.location.reload();
+    }
+
+    function showSupportModal() {
+        var modal = document.getElementById('supportModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+    }
+
+    function closeSupportModal() {
+        var modal = document.getElementById('supportModal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+
+    function goToSupportBlock() {
+        closeSupportModal();
+        var support = document.getElementById('supportAuthor');
+        if (!support) return;
+        support.classList.remove('hidden');
+        support.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        support.classList.add('support-highlight');
+        window.setTimeout(function() {
+            support.classList.remove('support-highlight');
+        }, 2400);
     }
 
     // Показ полей в зависимости от типа оплаты СОР
@@ -1104,6 +1265,7 @@
             // Имя скачиваемого файла
             var filename = "Перевод_СОР_" + data.child_name + "_" + data.child_surname + ".docx";
             saveAs(out, filename);
+            showSupportModal();
         });
     }
 </script>
