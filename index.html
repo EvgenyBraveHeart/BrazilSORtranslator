@@ -383,7 +383,8 @@
             <div class="form-row">
                 <div class="form-col">
                     <label>Цифровая печать:</label>
-                    <input type="text" id="selo_digital" value="123456CE0000000000000000Z">
+                    <!-- <input type="text" id="selo_digital" value="123456CE0000000000000000Z"> -->
+                    <input type="text" id="selo_digital" class="uppercase-input" placeholder="123456CE0000000000000000Z">
                 </div>
             </div>
 
@@ -504,8 +505,8 @@
                 </div>
                 <div class="form-col">
                     <label>8. Порядковый номер Апостиля:</label>
-                    <!-- <input type="text" id="ap_idx" value="2603404-25"> -->
-                    <input type="text" id="ap_idx" class="uppercase-input" placeholder="2603404-25">
+                    <!-- <input type="text" id="ap_idx" value="1234567-89"> -->
+                    <input type="text" id="ap_idx" class="uppercase-input" placeholder="1234567-89" oninput="syncApostilleQrNumber()">
                 </div>
             </div>
             <div class="form-group">
@@ -516,7 +517,7 @@
                 <div class="form-col">
                     <label>Номер QR-кода справа:</label>
                     <!-- <input type="text" id="ap_qr_num" value="1234567-89"> -->
-                    <input type="text" id="ap_qr_num" class="uppercase-input" placeholder="1234567-89">
+                    <input type="text" id="ap_qr_num" class="uppercase-input" placeholder="1234567-89" oninput="markApostilleQrNumberEdited()">
                 </div>
                 <div class="form-col">
                     <label>Контрольный проверочный код:</label>
@@ -548,6 +549,8 @@
 <script>
     var formRestoredFromCache = false;
     var cacheSavePaused = false;
+    var apQrNumManuallyEdited = false;
+    var lastSyncedApIdx = '';
 
     // Переключение между стартовым экраном и конфигуратором
     function startConfigurator() {
@@ -607,10 +610,70 @@
 
     // Синхронизация имени владельца в Апостиле с именем ребенка
     function syncOwnerName() {
-        var name = document.getElementById('child_name').value.toUpperCase();
-        var surname = document.getElementById('child_surname').value.toUpperCase();
+        var name = normalizeSpaces(document.getElementById('child_name').value).toUpperCase();
+        var surname = normalizeSpaces(document.getElementById('child_surname').value).toUpperCase();
         document.getElementById('ap_doc_owner').value = (name + ' ' + surname).trim();
         saveFormDataToCache();
+    }
+
+    function normalizeSpaces(value) {
+        return (value || '').replace(/\s+/g, ' ').trim();
+    }
+
+    function normalizeNameFields() {
+        ['child_name','child_surname','father_name','mother_name','gfather_pat','gmother_pat','gfather_mat','gmother_mat'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            el.value = normalizeSpaces(el.value);
+        });
+        var name = normalizeSpaces(document.getElementById('child_name').value).toUpperCase();
+        var surname = normalizeSpaces(document.getElementById('child_surname').value).toUpperCase();
+        document.getElementById('ap_doc_owner').value = (name + ' ' + surname).trim();
+    }
+
+    function initNameNormalizationListeners() {
+        ['child_name','child_surname','father_name','mother_name','gfather_pat','gmother_pat','gfather_mat','gmother_mat'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('blur', function() {
+                normalizeNameFields();
+                saveFormDataToCache();
+            });
+        });
+    }
+
+    function syncApostilleQrNumber() {
+        var apIdxEl = document.getElementById('ap_idx');
+        var qrEl = document.getElementById('ap_qr_num');
+        if (!apIdxEl || !qrEl) return;
+
+        var apIdx = apIdxEl.value;
+        if (!apQrNumManuallyEdited || qrEl.value === lastSyncedApIdx) {
+            qrEl.value = apIdx;
+            lastSyncedApIdx = apIdx;
+        }
+        saveFormDataToCache();
+    }
+
+    function markApostilleQrNumberEdited() {
+        var qrEl = document.getElementById('ap_qr_num');
+        if (!qrEl) return;
+        apQrNumManuallyEdited = qrEl.value !== lastSyncedApIdx;
+        saveFormDataToCache();
+    }
+
+    function initApostilleQrSyncState() {
+        var apIdxEl = document.getElementById('ap_idx');
+        var qrEl = document.getElementById('ap_qr_num');
+        if (!apIdxEl || !qrEl) return;
+
+        lastSyncedApIdx = apIdxEl.value;
+        if (!qrEl.value && apIdxEl.value) {
+            apQrNumManuallyEdited = false;
+            syncApostilleQrNumber();
+        } else {
+            apQrNumManuallyEdited = qrEl.value !== apIdxEl.value;
+        }
     }
 
     function getFormFieldIds() {
@@ -653,6 +716,7 @@
             toggleCountry('mother');
             toggleSorTypeDetails();
             updateBirthDatePartsFromPicker();
+            initApostilleQrSyncState();
             syncOwnerName();
         } catch (e) {
             console.warn('Не удалось загрузить кеш формы:', e);
@@ -762,6 +826,7 @@
         try {
             loadFormDataFromCache();
             initFormCacheListeners();
+            initNameNormalizationListeners();
             toggleSorTypeDetails();
             syncOwnerName();
             updateCacheRestoredNotice();
@@ -903,6 +968,8 @@
 
     // ГЛАВНАЯ ФУНКЦИЯ: Сбор данных и генерация Word
     function generateDocument() {
+        normalizeNameFields();
+        saveFormDataToCache();
         if (!validateForm()) {
             return;
         }
@@ -966,8 +1033,8 @@
 
             // Собираем полный объект данных для передачи в docxtemplater
             var data = {
-                child_name: document.getElementById('child_name').value.toUpperCase(),
-                child_surname: document.getElementById('child_surname').value.toUpperCase(),
+                child_name: normalizeSpaces(document.getElementById('child_name').value).toUpperCase(),
+                child_surname: normalizeSpaces(document.getElementById('child_surname').value).toUpperCase(),
                 child_cpf: document.getElementById('child_cpf').value,
                 act_number: document.getElementById('act_number').value,
                 birth_date_text: document.getElementById('birth_date_text').value,
@@ -980,17 +1047,17 @@
                 birth_hospital: document.getElementById('birth_hospital').value,
                 child_gender: document.getElementById('child_gender').value,
                 
-                father_name: document.getElementById('father_name').value.toUpperCase(),
+                father_name: normalizeSpaces(document.getElementById('father_name').value).toUpperCase(),
                 father_birth_place: fCountry,
                 father_state: document.getElementById('father_state').value,
-                gfather_pat: document.getElementById('gfather_pat').value.toUpperCase(),
-                gmother_pat: document.getElementById('gmother_pat').value.toUpperCase(),
+                gfather_pat: normalizeSpaces(document.getElementById('gfather_pat').value).toUpperCase(),
+                gmother_pat: normalizeSpaces(document.getElementById('gmother_pat').value).toUpperCase(),
                 
-                mother_name: document.getElementById('mother_name').value.toUpperCase(),
+                mother_name: normalizeSpaces(document.getElementById('mother_name').value).toUpperCase(),
                 mother_birth_place: mCountry,
                 mother_state: document.getElementById('mother_state').value,
-                gfather_mat: document.getElementById('gfather_mat').value.toUpperCase(),
-                gmother_mat: document.getElementById('gmother_mat').value.toUpperCase(),
+                gfather_mat: normalizeSpaces(document.getElementById('gfather_mat').value).toUpperCase(),
+                gmother_mat: normalizeSpaces(document.getElementById('gmother_mat').value).toUpperCase(),
                 
                 twins: document.getElementById('twins').value,
                 reg_date_text: document.getElementById('reg_date_text').value,
