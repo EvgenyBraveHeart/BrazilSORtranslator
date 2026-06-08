@@ -306,7 +306,7 @@
                 padding: 12px;
             }
         }
-        @media (max-width: 700px) {
+        @media (max-width: 900px) {
             .support-grid {
                 grid-template-columns: 1fr;
             }
@@ -431,12 +431,8 @@
 
             <div class="form-row">
                 <div class="form-col">
-                    <label>Выбор даты рождения в календаре:</label>
+                    <label>Дата рождения:</label>
                     <input type="date" id="birth_date_picker" onchange="convertBirthDate()">
-                </div>
-                <div class="form-col">
-                    <label>Время рождения:</label>
-                    <input type="time" id="birth_time" value="23:11">
                 </div>
             </div>
 
@@ -453,20 +449,38 @@
 
             <div class="form-row">
                 <div class="form-col">
-                    <label>Место рождения (город):</label>
-                    <input type="text" id="birth_city" value="г. Сантус">
+                    <label>Время рождения:</label>
+                    <input type="time" id="birth_time" placeholder="23:11">
+                </div>
+                <div class="form-col">
+                    <label>Место рождения:</label>
+                    <input type="text" id="nate_city" placeholder="г. Сантус" value="г. Сантус">
                 </div>
                 <div class="form-col">
                     <label>Штат:</label>
-                    <input type="text" id="birth_state" value="Сан-Паулу">
+                    <input type="text" id="nate_state" placeholder="Сан-Паулу" value="Сан-Паулу">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-col">
                     <label>Место рождения (Учреждение/Госпиталь):</label>
-                    <input type="text" id="birth_hospital" value="Госпитальный комплекс Эстивадорес">
+                    <input type="text" id="birth_hospital" placeholder="Госпитальный комплекс Эстивадорес" value="Госпитальный комплекс Эстивадорес">
                 </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-col">
+                    <label>Город рождения:</label>
+                    <input type="text" id="birth_city" placeholder="г. Сантус" value="г. Сантус">
+                </div>
+                <div class="form-col">
+                    <label>Штат:</label>
+                    <input type="text" id="birth_state" placeholder="Сан-Паулу" value="Сан-Паулу">
+                </div>
+            <!-- </div>
+
+            <div class="form-row"> -->
                 <div class="form-col">
                     <label>Пол:</label>
                     <select id="child_gender">
@@ -565,7 +579,7 @@
             <div class="form-row">
                 <div class="form-col">
                     <label>Близнецы:</label>
-                    <input type="text" id="twins" value="НЕ ЗАРЕГИСТРИРОВАНО">
+                    <input type="text" id="twins" placeholder="НЕ ЗАРЕГИСТРИРОВАНО" value="НЕ ЗАРЕГИСТРИРОВАНО">
                 </div>
             </div>         
 
@@ -694,17 +708,17 @@
             <div class="form-row">
                 <div class="form-col">
                     <label>1. Страна выдачи:</label>
-                    <input type="text" id="ap_country" value="ФЕДЕРАТИВНАЯ РЕСПУБЛИКА БРАЗИЛИЯ">
+                    <input type="text" id="ap_country" placeholder="ФЕДЕРАТИВНАЯ РЕСПУБЛИКА БРАЗИЛИЯ" value="ФЕДЕРАТИВНАЯ РЕСПУБЛИКА БРАЗИЛИЯ">
                 </div>
                 <div class="form-col">
                     <label>2. Кем подписан документ:</label>
-                    <input type="text" id="ap_signed_by" value="ВИКТОР УГУ БРИТУ СИМОНЕ ФРАНСА">
+                    <input type="text" id="ap_signed_by" placeholder="ВИКТОР УГУ БРИТУ СИМОНЕ ФРАНСА" value="ВИКТОР УГУ БРИТУ СИМОНЕ ФРАНСА">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-col">
                     <label>3. Действующий в качестве:</label>
-                    <input type="text" id="ap_role" value="СОТРУДНИК ОТДЕЛА ЗАГС">
+                    <input type="text" id="ap_role" placeholder="СОТРУДНИК ОТДЕЛА ЗАГС" value="СОТРУДНИК ОТДЕЛА ЗАГС">
                 </div>
                 <div class="form-col">
                     <label>4. Скреплен печатью/штампом:</label>
@@ -714,7 +728,7 @@
             <div class="form-row">
                 <div class="form-col">
                     <label>5. Город удостоверения:</label>
-                    <input type="text" id="ap_city" value="г. САНТУС">
+                    <input type="text" id="ap_city" placeholder="г. САНТУС" value="г. САНТУС">
                 </div>
                 <div class="form-col">
                     <label>6. Дата апостилирования:</label>
@@ -725,7 +739,7 @@
             <div class="form-row">
                 <div class="form-col">
                     <label>7. Кем выдан апостиль (Нотариус):</label>
-                    <input type="text" id="ap_officer" value="Силмара Чиамулера Лопес">
+                    <input type="text" id="ap_officer" placeholder="Силмара Чиамулера Лопес" value="Силмара Чиамулера Лопес">
                 </div>
                 <div class="form-col">
                     <label>8. Порядковый номер Апостиля:</label>
@@ -759,13 +773,6 @@
         <!-- КНОПКА ГЕНЕРАЦИИ -->
         <button class="btn btn-success" onclick="generateDocument()">Сформировать и скачать Word файл (.docx)</button>
 
-        <!-- БЛОК ИНСТРУКЦИЙ -->
-        <!-- <div class="instructions">
-            <strong>Инструкция для настройки GitHub и шаблона Word:</strong><br>
-            1. В вашем Word файле замените все динамические значения на метки в двойных скобках. Список основных меток, которые генерирует этот сайт:<br>
-            <code>{{child_name}}</code>, <code>{{child_surname}}</code>, <code>{{child_cpf}}</code>, <code>{{act_number}}</code>, <code>{{birth_date_text}}</code>, <code>{{b_day}}</code>, <code>{{b_month}}</code>, <code>{{b_year}}</code>, <code>{{birth_time}}</code>, <code>{{birth_city}}</code>, <code>{{birth_state}}</code>, <code>{{birth_hospital}}</code>, <code>{{child_gender}}</code>, <code>{{father_name}}</code>, <code>{{father_birth_place}}</code>, <code>{{father_state}}</code>, <code>{{gfather_pat}}</code>, <code>{{gmother_pat}}</code>, <code>{{mother_name}}</code>, <code>{{mother_birth_place}}</code>, <code>{{mother_state}}</code>, <code>{{gfather_mat}}</code>, <code>{{gmother_mat}}</code>, <code>{{twins}}</code>, <code>{{reg_date_text}}</code>, <code>{{dn_number}}</code>, <code>{{notes_block}}</code>, <code>{{cartor_info}}</code>, <code>{{selo_digital}}</code>, <code>{{cartor_stamp}}</code>, <code>{{certify_block}}</code>, <code>{{payment_text}}</code>, <code>{{officer_stamp}}</code>, <code>{{blank_number}}</code>, а также для апостиля: <code>{{ap_country}}</code>, <code>{{ap_signed_by}}</code>, <code>{{ap_role}}</code>, <code>{{ap_stamp_owner}}</code>, <code>{{ap_city}}</code>, <code>{{ap_date}}</code>, <code>{{ap_officer}}</code>, <code>{{ap_idx}}</code>, <code>{{ap_doc_owner}}</code>, <code>{{ap_qr_num}}</code>, <code>{{ap_check_code}}</code>, <code>{{ap_bottom_num}}</code>.<br>
-            2. Переименуйте размеченный Word файл в <code>template.docx</code> и положите его в ту же папку на GitHub, где лежит этот <code>index.html</code>.
-        </div> -->
     </main>
 
 </div>
@@ -951,7 +958,7 @@
 
     function getFormFieldIds() {
         return [
-            'child_name','child_surname','child_cpf','act_number','birth_date_picker','birth_date_text','birth_time','birth_city','birth_state','birth_hospital','child_gender',
+            'child_name','child_surname','child_cpf','act_number','birth_date_picker','birth_date_text','birth_time','nate_city','nate_state','birth_city','birth_state','birth_hospital','child_gender',
             'father_name','father_country','father_country_other','father_state','gfather_pat','gmother_pat',
             'mother_name','mother_country','mother_country_other','mother_state','gfather_mat','gmother_mat',
             'twins','dn_number','reg_date_picker','reg_date_text','notes_block','cartor_info','selo_digital','cartor_stamp','certify_block','officer_stamp','sorType','cartor_pay','state_pay','fee_pay','all_pay','receipt_num','custom_reason',
@@ -1040,7 +1047,9 @@
             {id: 'act_number', label: 'Регистрационный номер записи акта'},
             {id: 'birth_date_text', label: 'Дата рождения текстом'},
             {id: 'birth_time', label: 'Время рождения'},
-            {id: 'birth_city', label: 'Место рождения (город)'},
+            {id: 'nate_city', label: 'Место рождения'},
+            {id: 'nate_state', label: 'Штат места рождения'},
+            {id: 'birth_city', label: 'Город рождения'},
             {id: 'birth_state', label: 'Штат рождения'},
             {id: 'birth_hospital', label: 'Учреждение/госпиталь'},
             {id: 'child_gender', label: 'Пол ребенка'},
@@ -1343,6 +1352,8 @@
                 b_month: document.getElementById('b_month').value,
                 b_year: document.getElementById('b_year').value,
                 birth_time: document.getElementById('birth_time').value,
+                nate_city: document.getElementById('nate_city').value,
+                nate_state: document.getElementById('nate_state').value,
                 birth_city: document.getElementById('birth_city').value,
                 birth_state: document.getElementById('birth_state').value,
                 birth_hospital: document.getElementById('birth_hospital').value,
