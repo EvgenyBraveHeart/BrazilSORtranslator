@@ -112,8 +112,9 @@
 
         textarea {
             min-height: 80px;
-            overflow: hidden;
-            resize: none;
+            overflow: auto;
+            resize: vertical;
+            line-height: 1.5;
         }
         .uppercase-input { text-transform: uppercase; }
 
@@ -391,7 +392,7 @@
                     <input type="text" id="child_name" class="uppercase-input" placeholder="АННА" oninput="syncOwnerName()">
                 </div>
                 <div class="form-col">
-                    <label>Фамилия ребенка (капсом):</label>
+                    <label>Фамилия ребенка:</label>
                     <input type="text" id="child_surname" class="uppercase-input" placeholder="ИВАНОВА" oninput="syncOwnerName()">
                 </div>
             </div>
@@ -422,7 +423,7 @@
 
             <div class="form-group">
                 <label>Дата рождения текстом (можно править вручную):</label>
-                <input type="text" id="birth_date_text" placeholder="Первое января две тысячи двадцать пятого года">
+                <textarea id="birth_date_text" placeholder="Первое января две тысячи двадцать пятого года" rows="2"></textarea>
             </div>
 
             <div class="form-row" style="font-size:12px; color:#666; margin-top:-10px; margin-bottom:15px;">
@@ -553,7 +554,7 @@
                 <div class="form-col">
                     <label>Дата регистрации в карторио:</label>
                     <input type="date" id="reg_date_picker" onchange="convertRegDate()">
-                    <input type="text" id="reg_date_text" placeholder="Восемнадцатое декабря две тысячи двадцать пятого года">
+                    <textarea id="reg_date_text" placeholder="Восемнадцатое декабря две тысячи двадцать пятого года" rows="2"></textarea>
                 </div>
             </div>
 
@@ -670,7 +671,7 @@
 
         <!-- РАЗДЕЛ 6: Апостиль -->
         <div class="card" style="border-top: 4px solid #f1c40f;">
-            <h2>5. Гаагский Апостиль (Apostila de Haia)</h2>
+            <h2>5. Гаагский Апостиль</h2>
             <div class="form-row">
                 <div class="form-col">
                     <label>1. Страна выдачи:</label>
@@ -688,7 +689,7 @@
                 </div>
                 <div class="form-col">
                     <label>4. Скреплен печатью/штампом:</label>
-                    <input type="text" id="ap_stamp_owner" value="ОТДЕЛА РЕГИСТРАЦИИ АКТОВ ГРАЖДАНСКОГО СОСТОЯНИЯ ФИЗИЧЕСКИХ ЛИЦ 2 ГО ПОДОКРУГА Г. САНТУС, ШТАТ САН-ПАУЛУ">
+                    <textarea id="ap_stamp_owner" rows="3">ОТДЕЛА РЕГИСТРАЦИИ АКТОВ ГРАЖДАНСКОГО СОСТОЯНИЯ ФИЗИЧЕСКИХ ЛИЦ 2 ГО ПОДОКРУГА Г. САНТУС, ШТАТ САН-ПАУЛУ</textarea>
                 </div>
             </div>
             <div class="form-row">
@@ -1116,12 +1117,12 @@
 
     // Преобразование дат в текстовую форму на русском языке
     const numToTextWords = {
-        0: 'ноль', 1: 'первое', 2: 'второе', 3: 'третье', 4: 'четвертое', 5: 'пятое',
+        0: 'ноль', 1: 'первое', 2: 'второе', 3: 'третье', 4: 'четвёртое', 5: 'пятое',
         6: 'шестое', 7: 'седьмое', 8: 'восьмое', 9: 'девятое', 10: 'десятое',
         11: 'одиннадцатое', 12: 'двенадцатое', 13: 'тринадцатое', 14: 'четырнадцатое',
         15: 'пятнадцатое', 16: 'шестнадцатое', 17: 'семнадцатое', 18: 'восемнадцатое',
         19: 'девятнадцатое', 20: 'двадцатое', 21: 'двадцать первое', 22: 'двадцать второе',
-        23: 'двадцать третье', 24: 'двадцать четвертое', 25: 'двадцать пятое',
+        23: 'двадцать третье', 24: 'двадцать четвёртое', 25: 'двадцать пятое',
         26: 'двадцать шестое', 27: 'двадцать седьмое', 28: 'двадцать восьмое',
         29: 'двадцать девятое', 30: 'тридцатое', 31: 'тридцать первое'
     };
