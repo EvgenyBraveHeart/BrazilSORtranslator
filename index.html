@@ -95,6 +95,13 @@
             font-size: 14px;
             color: #444;
         }
+        .field-hint {
+            display: block;
+            margin-top: 3px;
+            font-size: 12px;
+            color: #777;
+            font-weight: 400;
+        }
 
         input[type="text"], select, textarea, input[type="date"], input[type="time"] {
             width: 100%;
@@ -112,9 +119,10 @@
 
         textarea {
             min-height: 80px;
-            overflow: auto;
+            overflow-y: hidden;
             resize: vertical;
             line-height: 1.5;
+            transition: height 0.1s ease;
         }
         .uppercase-input { text-transform: uppercase; }
 
@@ -365,7 +373,7 @@
         </div>
         
         <br><br>
-        <button class="btn" onclick="startConfigurator()">Начать заполнение</button>
+        <button class="btn" id="startFormBtn" onclick="startConfigurator()">Начать заполнение</button>
         <!-- <button class="btn btn-secondary" onclick="clearFormCache()">Очистить форму</button> -->
         <button class="btn btn-secondary hidden" id="clearCacheBtn" onclick="clearFormCache()">Очистить форму</button>
     </header>
@@ -401,6 +409,41 @@
     <main id="configuratorPage" class="hidden">
         
 
+        <!-- РАЗДЕЛ 1: Постановка данных по городам -->
+        <div class="card">
+            <h2>Постановка данных по городам</h2>
+            <div class="form-row">
+                <div class="form-col">
+                    <label>Выберите город:</label>
+                    <select id="city_preset_select" onchange="onCityPresetChange()">
+                        <option value="" selected>Пусто</option>
+                        <option value="santos">Сантос</option>
+                        <option value="load_json">Загрузить из JSON-шаблона</option>
+                        <!-- <option value="example">Пример</option> -->
+                        <option value="custom">Предложить свой город</option>
+                    </select>
+                    <span class="field-hint">Выбор города подставляет стандартные данные для мест рождения, Карторио и Апостиля.</span>
+                </div>
+            </div>
+            <div class="form-row hidden" id="city_json_block">
+                <div class="form-col">
+                    <label>Загрузить JSON-шаблон города:</label>
+                    <input type="file" id="city_json_input" accept=".json" multiple />
+                    <button class="btn btn-secondary" type="button" onclick="loadCityTemplateFromFile()" style="margin-top:10px;">Загрузить JSON</button>
+                    <span class="field-hint">Выберите один или несколько JSON-файлов из папки Cidades.</span>
+                    <div id="city_json_status" class="field-hint" style="margin-top:6px; color:#555;"></div>
+                </div>
+            </div>
+            <div class="form-row hidden" id="city_custom_block">
+                <div class="form-col">
+                    <label>Свой город</label>
+                    <!-- <input type="text" id="city_custom_name" placeholder="Введите свой город"> -->
+                    <span class="field-hint">Перейдите в генератор, чтобы создать отдельный файл города для папки Cidades.</span>
+                    <button class="btn btn-secondary" type="button" onclick="window.open('city-editor.html', '_blank')" style="margin-top:10px;">Открыть генератор города</button>
+                </div>
+            </div>
+        </div>
+
 
         <!-- РАЗДЕЛ 2: Данные ребенка -->
         <div class="card">
@@ -408,10 +451,12 @@
             <div class="form-row">
                 <div class="form-col">
                     <label>Имя ребенка:</label>
+                    <span class="field-hint">Nome</span>
                     <input type="text" id="child_name" class="uppercase-input" placeholder="АННА" oninput="syncOwnerName()">
                 </div>
                 <div class="form-col">
                     <label>Фамилия ребенка:</label>
+                    <span class="field-hint">Sobrenome</span>
                     <input type="text" id="child_surname" class="uppercase-input" placeholder="ИВАНОВА" oninput="syncOwnerName()">
                 </div>
             </div>
@@ -419,10 +464,12 @@
             <div class="form-row">
                 <div class="form-col">
                     <label>CPF (в формате 123.456.789-00):</label>
+                    <span class="field-hint">Número do CPF</span>
                     <input type="text" id="child_cpf" placeholder="000.000.000-00" maxlength="14" oninput="formatCPF(this)">
                 </div>
                 <div class="form-col">
                     <label>Регистрационный номер записи акта (32 знака):</label>
+                    <span class="field-hint">Matrícula</span>
                     <!-- <input type="text" id="act_number" value="123456 12 34 2025 1 00000 123 0000000 01"> -->
                     <!-- <input type="text" id="act_number" placeholder="123456 12 34 2025 1 00000 123 0000000 01"> -->
                     <input type="text" id="act_number" placeholder="123456 12 34 2025 1 00000 123 0000000 01" maxlength="40" oninput="formatMatricula(this)">
@@ -432,57 +479,66 @@
             <div class="form-row">
                 <div class="form-col">
                     <label>Дата рождения:</label>
+                    <span class="field-hint">Data de nascimento</span>
                     <input type="date" id="birth_date_picker" onchange="convertBirthDate()">
                 </div>
             </div>
 
             <div class="form-group">
                 <label>Дата рождения текстом (можно править вручную):</label>
+                <!-- <span class="field-hint">Data de nascimento</span> -->
                 <textarea id="birth_date_text" placeholder="Первое января две тысячи двадцать пятого года" rows="2"></textarea>
             </div>
 
             <div class="form-row" style="font-size:12px; color:#666; margin-top:-10px; margin-bottom:15px;">
-                <div class="form-col">День: <input type="text" id="b_day" style="padding:4px; width:50px;" readonly></div>
-                <div class="form-col">Месяц: <input type="text" id="b_month" style="padding:4px; width:50px;" readonly></div>
-                <div class="form-col">Год: <input type="text" id="b_year" style="padding:4px; width:70px;" readonly></div>
+                <div class="form-col"><span class="field-hint" style="margin:0; color:#666;">День / Dia</span><input type="text" id="b_day" style="padding:4px; width:50px;" readonly></div>
+                <div class="form-col"><span class="field-hint" style="margin:0; color:#666;">Месяц / Mês</span><input type="text" id="b_month" style="padding:4px; width:50px;" readonly></div>
+                <div class="form-col"><span class="field-hint" style="margin:0; color:#666;">Год / Ano</span><input type="text" id="b_year" style="padding:4px; width:70px;" readonly></div>
             </div>
 
             <div class="form-row">
                 <div class="form-col">
                     <label>Время рождения:</label>
+                    <span class="field-hint">Horário de nascimento</span>
                     <input type="time" id="birth_time" placeholder="23:11">
                 </div>
                 <div class="form-col">
                     <label>Место рождения:</label>
-                    <input type="text" id="nate_city" placeholder="г. Сантус" value="г. Сантус">
+                    <span class="field-hint">Município da naturalidade</span>
+                    <input type="text" id="nate_city" placeholder="г. Сантус">
                 </div>
                 <div class="form-col">
                     <label>Штат:</label>
-                    <input type="text" id="nate_state" placeholder="Сан-Паулу" value="Сан-Паулу">
+                    <span class="field-hint">UF</span>
+                    <input type="text" id="nate_state" placeholder="Сан-Паулу">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-col">
                     <label>Место рождения (Учреждение/Госпиталь):</label>
-                    <input type="text" id="birth_hospital" placeholder="Госпитальный комплекс Эстивадорес" value="Госпитальный комплекс Эстивадорес">
+                    <span class="field-hint">Local de nascimento</span>
+                    <input type="text" id="birth_hospital" placeholder="Госпитальный комплекс Эстивадорес">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-col">
                     <label>Город рождения:</label>
-                    <input type="text" id="birth_city" placeholder="г. Сантус" value="г. Сантус">
+                    <span class="field-hint">Município de nascimento</span>
+                    <input type="text" id="birth_city" placeholder="г. Сантус">
                 </div>
                 <div class="form-col">
                     <label>Штат:</label>
-                    <input type="text" id="birth_state" placeholder="Сан-Паулу" value="Сан-Паулу">
+                    <span class="field-hint">UF</span>
+                    <input type="text" id="birth_state" placeholder="Сан-Паулу">
                 </div>
             <!-- </div>
 
             <div class="form-row"> -->
                 <div class="form-col">
                     <label>Пол:</label>
+                    <span class="field-hint">Sexo</span>
                     <select id="child_gender">
                         <option value="" disabled selected>-- Выберите пол --</option>
                         <option value="Мужской">Мужской</option>
@@ -499,13 +555,16 @@
             <!-- ОТЕЦ -->
             <h3 style="color:#383bdb; border-left: 3px solid #383bdb; padding-left: 5px;">ОТЕЦ</h3>
             <div class="form-group">
-                <label>ФИО Отца:</label>
+                <label>Имя Фамилия Отца:</label>
+                <span class="field-hint">Genitor</span>
                 <input type="text" id="father_name" class="uppercase-input" placeholder="ПЕТР ИВАНОВ">
             </div>
             <div class="form-row">
                 <div class="form-col">
                     <label>Место рождения отца:</label>
+                    <span class="field-hint">Município de nascimento</span>
                     <select id="father_country" onchange="toggleCountry('father')">
+                        <option value="" disabled selected>-- Выберите страну --</option>
                         <option value="Россия">Россия</option>
                         <option value="СССР">СССР</option>
                         <option value="other">Другая (вписать)</option>
@@ -514,16 +573,19 @@
                 </div>
                 <div class="form-col">
                     <label>Штат/Регион отца:</label>
-                    <input type="text" id="father_state" value="За пределами Бразилии">
+                    <span class="field-hint">UF</span>
+                    <input type="text" id="father_state" value="За пределами Бразилии" placeholder="За пределами Бразилии">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-col">
-                    <label>Дедушка (по линии отца) - ФИО Капсом:</label>
+                    <label>Дедушка (по линии отца):</label>
+                    <span class="field-hint">Avós</span>
                     <input type="text" id="gfather_pat" class="uppercase-input" placeholder="ДМИТРИЙ ИВАНОВ">
                 </div>
                 <div class="form-col">
-                    <label>Бабушка (по линии отца) - ФИО Капсом:</label>
+                    <label>Бабушка (по линии отца):</label>
+                    <span class="field-hint">Avós</span>
                     <input type="text" id="gmother_pat" class="uppercase-input" placeholder="ОЛЬГА ИВАНОВА">
                 </div>
             </div>
@@ -532,13 +594,16 @@
             <!-- МАТЬ -->
             <h3 style="color:#c0392b; border-left: 3px solid #c0392b; padding-left: 5px;">МАТЬ</h3>
             <div class="form-group">
-                <label>ФИО Матери:</label>
+                <label>Имя Фамилия Матери:</label>
+                <span class="field-hint">Genitora</span>
                 <input type="text" id="mother_name" class="uppercase-input" placeholder="МАРИЯ ИВАНОВА">
             </div>
             <div class="form-row">
                 <div class="form-col">
                     <label>Место рождения матери:</label>
+                    <span class="field-hint">Município de nascimento</span>
                     <select id="mother_country" onchange="toggleCountry('mother')">
+                        <option value="" disabled selected>-- Выберите страну --</option>
                         <option value="Россия">Россия</option>
                         <option value="СССР">СССР</option>
                         <option value="other">Другая (вписать)</option>
@@ -547,16 +612,19 @@
                 </div>
                 <div class="form-col">
                     <label>Штат/Регион матери:</label>
-                    <input type="text" id="mother_state" value="За пределами Бразилии">
+                    <span class="field-hint">UF</span>
+                    <input type="text" id="mother_state" value="За пределами Бразилии" placeholder="За пределами Бразилии">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-col">
-                    <label>Дедушка (по линии матери) - ФИО Капсом:</label>
+                    <label>Дедушка (по линии матери):</label>
+                    <span class="field-hint">Avós</span>
                     <input type="text" id="gfather_mat" class="uppercase-input" placeholder="ТИМОФЕЙ СМИРНОВ">
                 </div>
                 <div class="form-col">
-                    <label>Бабушка (по линии матери) - ФИО Капсом:</label>
+                    <label>Бабушка (по линии матери) :</label>
+                    <span class="field-hint">Avós</span>
                     <input type="text" id="gmother_mat" class="uppercase-input" placeholder="ВАСИЛИСА СМИРНОВА">
                 </div>
             </div>
@@ -579,6 +647,7 @@
             <div class="form-row">
                 <div class="form-col">
                     <label>Близнецы:</label>
+                    <span class="field-hint">Gêmeo</span>
                     <input type="text" id="twins" placeholder="НЕ ЗАРЕГИСТРИРОВАНО" value="НЕ ЗАРЕГИСТРИРОВАНО">
                 </div>
             </div>         
@@ -586,7 +655,9 @@
             <div class="form-row">
                 <div class="form-col">
                     <label>Дата регистрации в карторио:</label>
+                    <span class="field-hint">Data de registro</span>
                     <input type="date" id="reg_date_picker" onchange="convertRegDate()">
+                    <label style="margin-top:12px; font-weight:500;">Дата регистрации текстом:</label>
                     <textarea id="reg_date_text" placeholder="Восемнадцатое декабря две тысячи двадцать пятого года" rows="2"></textarea>
                 </div>
             </div>
@@ -599,6 +670,7 @@
             <div class="form-row">
                 <div class="form-col">
                     <label>Номер декларации о живорождении (зелёная/жёлтая справка):</label>
+                    <span class="field-hint">DNV</span>
                     <!-- <input type="text" id="dn_number" value="30-12345678-9"> -->
                     <input type="text" id="dn_number" class="uppercase-input" placeholder="30-12345678-9">
                 </div>
@@ -606,7 +678,8 @@
 
             <div class="form-group">
                 <label>Отметки / Внесенные записи:</label>
-                <textarea id="notes_block">Записано в книге А-123, страница 123, под номером 123456. Иных сведений для заверения нет.</textarea>
+                <span class="field-hint">Anotações / Averbações</span>
+                <textarea id="notes_block" placeholder="Записано в книге А-123, страница 123, под номером 123456. Иных сведений для заверения нет.">Записано в книге А-123, страница 123, под номером 123456. Иных сведений для заверения нет.</textarea>
             </div>
         </div>
 
@@ -614,13 +687,14 @@
         <div class="card">
             <h2>4. Сведения о Нотариальной конторе (Карторио)</h2>
             <div class="form-group">
-                <label>Блок 1 (Информация о Карторио):</label>
-                <textarea id="cartor_info" style="min-height: 120px;">Номер в Национальном реестре нотариальных и регистрационных учреждений № 122671&#10;Отдел регистрации актов гражданского состояния физических лиц г. Сантус – 2-й подокруг&#10;Алдир Паскоал Монте Беллу – сотрудник отдела ЗАГС&#10;Адрес: пр-т Ав. Вашингтон Луиз, 61, Вила Матиас г. Сантус, штат Сан-Паулу&#10;Индекс: 11050201, Телефон: (013) 3234-2811&#10;Электронная почта: registrocivil2@uol.com.br</textarea>
+                <label>Информация о Карторио:</label>
+                <textarea id="cartor_info" style="min-height: 120px;" placeholder="Номер в Национальном реестре нотариальных и регистрационных учреждений № 122671&#10;Отдел регистрации актов гражданского состояния физических лиц г. Сантус – 2-й подокруг&#10;Алдир Паскоал Монте Беллу – сотрудник отдела ЗАГС&#10;Адрес: пр-т Ав. Вашингтон Луиз, 61, Вила Матиас г. Сантус, штат Сан-Паулу&#10;Индекс: 11050201, Телефон: (013) 3234-2811&#10;Электронная почта: registrocivil2@uol.com.br"></textarea>
             </div>
 
             <div class="form-row">
                 <div class="form-col">
                     <label>Цифровая печать:</label>
+                    <span class="field-hint">Selo Digital</span>
                     <!-- <input type="text" id="selo_digital" value="123456CE0000000000000000Z"> -->
                     <input type="text" id="selo_digital" class="uppercase-input" placeholder="123456CE0000000000000000Z">
                 </div>
@@ -628,19 +702,19 @@
 
             <div class="form-group">
                 <label>Текст штампа Карторио:</label>
-                <textarea id="cartor_stamp" style="min-height: 100px;">(штамп)&#10;2-й ПОДОКРУГ&#10;ОТДЕЛ РЕГИСТРАЦИИ АКТОВ ГРАЖДАНСКОГО СОСТОЯНИЯ ФИЗИЧЕСКИХ ЛИЦ&#10;КАРТОРИО МОНТЕ БЕЛЛУ&#10;ПР-Т АВ. ВАШИНГТОН ЛУИЗ, 61 (КАНАЛ 3)&#10;ИНДЕКС 11050-201&#10;САНТУС, САН-ПАУЛУ</textarea>
+                <textarea id="cartor_stamp" style="min-height: 100px;" placeholder="(штамп)&#10;2-й ПОДОКРУГ&#10;ОТДЕЛ РЕГИСТРАЦИИ АКТОВ ГРАЖДАНСКОГО СОСТОЯНИЯ ФИЗИЧЕСКИХ ЛИЦ&#10;КАРТОРИО МОНТЕ БЕЛЛУ&#10;ПР-Т АВ. ВАШИНГТОН ЛУИЗ, 61 (КАНАЛ 3)&#10;ИНДЕКС 11050-201&#10;САНТУС, САН-ПАУЛУ"></textarea>
             </div>
 
             <hr style="margin:20px 0; border:0; border-top:1px solid var(--border-color);">
 
             <div class="form-group">
                 <label>Блок удостоверения сотрудником:</label>
-                <textarea id="certify_block" style="min-height: 100px;">Содержание свидетельства соответствует действительности. Удостоверяю.&#10;гор. Сантус, Сан-Паулу, 22 декабря 2025 г.&#10;(Подпись)&#10;Виктор Угу Бриту Симоне Франса – Сотрудник отдела ЗАГС</textarea>
+                <textarea id="certify_block" style="min-height: 100px;" placeholder="Содержание свидетельства соответствует действительности. Удостоверяю.&#10;гор. Сантус, Сан-Паулу, 22 декабря 2025 г.&#10;(Подпись)&#10;Виктор Угу Бриту Симоне Франса – Сотрудник отдела ЗАГС"></textarea>
             </div>
 
             <div class="form-group">
                 <label>Текст штампа сотрудника:</label>
-                <textarea id="officer_stamp" style="min-height: 80px;">(штамп)&#10;Виктор Угу Бриту Симоне Франса&#10;Сотрудник отдела ЗАГС&#10;2-го подокруга г. Сантус, шт. Сан-Паулу</textarea>
+                <textarea id="officer_stamp" style="min-height: 80px;" placeholder="(штамп)&#10;Виктор Угу Бриту Симоне Франса&#10;Сотрудник отдела ЗАГС&#10;2-го подокруга г. Сантус, шт. Сан-Паулу"></textarea>
             </div>
 
             <!--Тип СОР и оплаты -->
@@ -697,6 +771,7 @@
 
             <div class="form-group">
                 <label>Номер бланка (справа сбоку):</label>
+                <!-- <span class="field-hint">Número do formulário / número de série</span> -->
                 <!-- <input type="text" id="blank_number" value="IA 012345678"> -->
                 <input type="text" id="blank_number" class="uppercase-input" placeholder="IA 012345678">
             </div>
@@ -712,23 +787,23 @@
                 </div>
                 <div class="form-col">
                     <label>2. Кем подписан документ:</label>
-                    <input type="text" id="ap_signed_by" placeholder="ВИКТОР УГУ БРИТУ СИМОНЕ ФРАНСА" value="ВИКТОР УГУ БРИТУ СИМОНЕ ФРАНСА">
+                    <input type="text" id="ap_signed_by" placeholder="ВИКТОР УГУ БРИТУ СИМОНЕ ФРАНСА">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-col">
                     <label>3. Действующий в качестве:</label>
-                    <input type="text" id="ap_role" placeholder="СОТРУДНИК ОТДЕЛА ЗАГС" value="СОТРУДНИК ОТДЕЛА ЗАГС">
+                    <input type="text" id="ap_role" placeholder="СОТРУДНИК ОТДЕЛА ЗАГС">
                 </div>
                 <div class="form-col">
                     <label>4. Скреплен печатью/штампом:</label>
-                    <textarea id="ap_stamp_owner" rows="3">ОТДЕЛА РЕГИСТРАЦИИ АКТОВ ГРАЖДАНСКОГО СОСТОЯНИЯ ФИЗИЧЕСКИХ ЛИЦ 2 ГО ПОДОКРУГА Г. САНТУС, ШТАТ САН-ПАУЛУ</textarea>
+                    <textarea id="ap_stamp_owner" rows="3" placeholder="ОТДЕЛ РЕГИСТРАЦИИ АКТОВ ГРАЖДАНСКОГО СОСТОЯНИЯ ФИЗИЧЕСКИХ ЛИЦ 2 ГО ПОДОКРУГА Г. САНТУС, ШТАТ САН-ПАУЛУ"></textarea>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-col">
                     <label>5. Город удостоверения:</label>
-                    <input type="text" id="ap_city" placeholder="г. САНТУС" value="г. САНТУС">
+                    <input type="text" id="ap_city" placeholder="г. САНТУС">
                 </div>
                 <div class="form-col">
                     <label>6. Дата апостилирования:</label>
@@ -738,8 +813,8 @@
             </div>
             <div class="form-row">
                 <div class="form-col">
-                    <label>7. Кем выдан апостиль (Нотариус):</label>
-                    <input type="text" id="ap_officer" placeholder="Силмара Чиамулера Лопес" value="Силмара Чиамулера Лопес">
+                    <label>7. Кем выдан апостиль:</label>
+                    <input type="text" id="ap_officer" placeholder="Силмара Чиамулера Лопес">
                 </div>
                 <div class="form-col">
                     <label>8. Порядковый номер Апостиля:</label>
@@ -796,6 +871,377 @@
     var apQrNumManuallyEdited = false;
     var lastSyncedApIdx = '';
 
+    var cityManifestEntries = {};
+    var cityTemplates = {
+        santos: {
+            label: 'Сантос',
+            birth_hospital: 'Госпитальный комплекс Эстивадорес',
+            nate_city: 'г. Сантус',
+            nate_state: 'Сан-Паулу',
+            birth_city: 'г. Сантус',
+            birth_state: 'Сан-Паулу',
+            cartor_info: 'Номер в Национальном реестре нотариальных и регистрационных учреждений № 122671\nОтдел регистрации актов гражданского состояния физических лиц г. Сантус – 2-й подокруг\nАлдир Паскоал Монте Беллу – сотрудник отдела ЗАГС\nАдрес: пр-т Ав. Вашингтон Луиз, 61, Вила Матиас г. Сантус, штат Сан-Паулу\nИндекс: 11050201, Телефон: (013) 3234-2811\nЭлектронная почта: registrocivil2@uol.com.br',
+            cartor_stamp: '(штамп)\n2-й ПОДОКРУГ\nОТДЕЛ РЕГИСТРАЦИИ АКТОВ ГРАЖДАНСКОГО СОСТОЯНИЯ ФИЗИЧЕСКИХ ЛИЦ\nКАРТОРИО МОНТЕ БЕЛЛУ\nПР-Т АВ. ВАШИНГТОН ЛУИЗ, 61 (КАНАЛ 3)\nИНДЕКС 11050-201\nСАНТУС, САН-ПАУЛУ',
+            certify_block: 'Содержание свидетельства соответствует действительности. Удостоверяю.\nгор. Сантус, Сан-Паулу, 22 декабря 2025 г.\n(Подпись)\nВиктор Угу Бриту Симоне Франса – Сотрудник отдела ЗАГС',
+            officer_stamp: '(штамп)\nВиктор Угу Бриту Симоне Франса\nСотрудник отдела ЗАГС\n2-го подокруга г. Сантус, шт. Сан-Паулу',
+            ap_country: 'ФЕДЕРАТИВНАЯ РЕСПУБЛИКА БРАЗИЛИЯ',
+            ap_signed_by: 'ВИКТОР УГУ БРИТУ СИМОНЕ ФРАНСА',
+            ap_role: 'СОТРУДНИК ОТДЕЛА ЗАГС',
+            ap_stamp_owner: 'ОТДЕЛ РЕГИСТРАЦИИ АКТОВ ГРАЖДАНСКОГО СОСТОЯНИЯ ФИЗИЧЕСКИХ ЛИЦ 2 ГО ПОДОКРУГА Г. САНТУС, ШТАТ САН-ПАУЛУ',
+            ap_city: 'г. САНТУС',
+            ap_officer: 'Силмара Чиамулера Лопес'
+        }
+        // ,
+        // example: {
+        //     label: 'Пример',
+        //     birth_hospital: 'Hospital Municipal Exemplo',
+        //     nate_city: 'г. Пример',
+        //     nate_state: 'Пример-штат',
+        //     birth_city: 'г. Пример',
+        //     birth_state: 'Пример-штат',
+        //     cartor_info: 'Номер в Национальном реестре нотариальных и регистрационных учреждений № 000000\nОтдел регистрации актов гражданского состояния физических лиц г. Пример – 1-й подокруг\nСотрудник отдела ЗАГС: Примерный Сотрудник\nАдрес: ул. Примерная, 1, г. Пример, штат Пример-штат\nИндекс: 00000000, Телефон: (000) 000-0000\nЭлектронная почта: exemplo@cartorio.br',
+        //     cartor_stamp: '(штамп)\n1-Й ПОДОКРУГ\nОТДЕЛ РЕГИСТРАЦИИ АКТОВ ГРАЖДАНСКОГО СОСТОЯНИЯ ФИЗИЧЕСКИХ ЛИЦ\nКАРТОРИО ПРИМЕР\nУЛ. ПРИМЕРНАЯ, 1\nИНДЕКС 00000-000\nПРИМЕР, ПРИМЕР-ШТАТ',
+        //     ap_country: 'ФЕДЕРАТИВНАЯ РЕСПУБЛИКА БРАЗИЛИЯ',
+        //     ap_signed_by: 'ИМЯ ПОДПИСАВШЕГО',
+        //     ap_role: 'СОТРУДНИК ОТДЕЛА ЗАГС',
+        //     ap_stamp_owner: 'ОТДЕЛ РЕГИСТРАЦИИ АКТОВ ГРАЖДАНСКОГО СОСТОЯНИЯ ФИЗИЧЕСКИХ ЛИЦ 1-Й ПОДОКРУГ Г. ПРИМЕР, ШТАТ ПРИМЕР-ШТАТ',
+        //     ap_city: 'г. ПРИМЕР',
+        //     ap_officer: 'Примерный Сотрудник',
+        //     certify_block: '...текст блока удостоверения...',
+        //     officer_stamp: '...текст штампа сотрудника...'
+        // }
+        // Добавляйте другие города сюда по шаблону: 
+        // , novoCidade: { label: 'Novo Cidade', birth_hospital: '...', nate_city: '...', nate_state: '...', birth_city: '...', birth_state: '...', cartor_info: '...', cartor_stamp: '...', certify_block: '...', officer_stamp: '...', ap_country: '...', ap_signed_by: '...', ap_role: '...', ap_stamp_owner: '...', ap_city: '...', ap_officer: '...' }
+    };
+
+    function onCityPresetChange() {
+        var selected = document.getElementById('city_preset_select').value;
+        var customBlock = document.getElementById('city_custom_block');
+        var jsonBlock = document.getElementById('city_json_block');
+        if (selected === 'custom') {
+            customBlock.classList.remove('hidden');
+            jsonBlock.classList.add('hidden');
+            setCustomCityPlaceholders();
+        } else if (selected === 'load_json') {
+            customBlock.classList.add('hidden');
+            jsonBlock.classList.remove('hidden');
+            updateCityJsonStatus('Выберите JSON-файл города для загрузки.');
+        } else {
+            customBlock.classList.add('hidden');
+            jsonBlock.classList.add('hidden');
+            if (cityTemplates[selected]) {
+                applyCityTemplate(cityTemplates[selected]);
+            } else if (cityManifestEntries[selected]) {
+                loadCityTemplateByKey(selected);
+            }
+        }
+        saveFormDataToCache();
+    }
+
+    function setCustomCityPlaceholders() {
+        var fields = ['birth_hospital', 'nate_city', 'nate_state', 'birth_city', 'birth_state', 'cartor_info', 'cartor_stamp', 'certify_block', 'officer_stamp', 'ap_country', 'ap_signed_by', 'ap_role', 'ap_stamp_owner', 'ap_city', 'ap_officer'];
+        fields.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            if (!el.value.trim()) {
+                el.placeholder = 'Введите значение вручную';
+            }
+        });
+    }
+
+    function applyCityTemplate(template) {
+        document.getElementById('birth_hospital').value = template.birth_hospital;
+        document.getElementById('nate_city').value = template.nate_city;
+        document.getElementById('nate_state').value = template.nate_state;
+        document.getElementById('birth_city').value = template.birth_city;
+        document.getElementById('birth_state').value = template.birth_state;
+        document.getElementById('cartor_info').value = template.cartor_info;
+        document.getElementById('cartor_stamp').value = template.cartor_stamp;
+        if (template.certify_block) document.getElementById('certify_block').value = template.certify_block;
+        if (template.officer_stamp) document.getElementById('officer_stamp').value = template.officer_stamp;
+        if (template.ap_country) document.getElementById('ap_country').value = template.ap_country;
+        if (template.ap_signed_by) document.getElementById('ap_signed_by').value = template.ap_signed_by;
+        if (template.ap_role) document.getElementById('ap_role').value = template.ap_role;
+        if (template.ap_stamp_owner) document.getElementById('ap_stamp_owner').value = template.ap_stamp_owner;
+        if (template.ap_city) document.getElementById('ap_city').value = template.ap_city;
+        if (template.ap_officer) document.getElementById('ap_officer').value = template.ap_officer;
+        resizeAllTextareas();
+    }
+
+    function updateCityPresetBlock() {
+        var selected = document.getElementById('city_preset_select').value;
+        var jsonBlock = document.getElementById('city_json_block');
+        if (selected === 'custom') {
+            document.getElementById('city_custom_block').classList.remove('hidden');
+            jsonBlock.classList.add('hidden');
+        } else if (selected === 'load_json') {
+            document.getElementById('city_custom_block').classList.add('hidden');
+            jsonBlock.classList.remove('hidden');
+        } else {
+            document.getElementById('city_custom_block').classList.add('hidden');
+            jsonBlock.classList.add('hidden');
+        }
+    }
+
+    function updateCityJsonStatus(message, isError) {
+        var status = document.getElementById('city_json_status');
+        if (!status) return;
+        status.textContent = message || '';
+        status.style.color = isError ? '#b00020' : '#555';
+    }
+
+    function loadCityTemplateFromFile() {
+        var input = document.getElementById('city_json_input');
+        if (!input || !input.files || !input.files.length) {
+            updateCityJsonStatus('Выберите хотя бы один JSON-файл города.', true);
+            return;
+        }
+        var files = Array.from(input.files).filter(function(file) {
+            return file.name.toLowerCase().endsWith('.json');
+        });
+        if (!files.length) {
+            updateCityJsonStatus('Выбранные файлы не содержат JSON.', true);
+            return;
+        }
+
+        var loaded = 0;
+        var lastTemplate = null;
+        var lastKey = null;
+        files.forEach(function(file) {
+            var reader = new FileReader();
+            reader.onload = function(evt) {
+                loaded++;
+                try {
+                    var template = JSON.parse(evt.target.result);
+                    var key = file.name;
+                    cityManifestEntries[key] = {
+                        key: key,
+                        label: template.label || file.name.replace(/\.json$/i, ''),
+                        file: null,
+                        template: template
+                    };
+                    lastTemplate = template;
+                    lastKey = key;
+                } catch (e) {
+                    console.warn('Ошибка парсинга JSON:', file.name, e);
+                }
+                if (loaded === files.length) {
+                    processCityManifest(Object.values(cityManifestEntries).reduce(function(acc, item) {
+                        acc[item.key] = item;
+                        return acc;
+                    }, {}));
+                    if (files.length === 1 && lastTemplate) {
+                        applyCityTemplate(lastTemplate);
+                        document.getElementById('city_preset_select').value = lastKey;
+                        document.getElementById('city_custom_block').classList.add('hidden');
+                        document.getElementById('city_json_block').classList.remove('hidden');
+                        updateCityJsonStatus('Шаблон загружен из файла: ' + files[0].name);
+                    } else {
+                        document.getElementById('city_preset_select').value = 'load_json';
+                        document.getElementById('city_custom_block').classList.add('hidden');
+                        document.getElementById('city_json_block').classList.remove('hidden');
+                        updateCityJsonStatus('Загружено ' + files.length + ' JSON-файлов. Выберите город в списке.');
+                    }
+                    saveFormDataToCache();
+                }
+            };
+            reader.onerror = function() {
+                loaded++;
+                console.warn('Не удалось прочитать файл', file.name);
+                if (loaded === files.length) {
+                    processCityManifest(Object.values(cityManifestEntries).reduce(function(acc, item) {
+                        acc[item.key] = item;
+                        return acc;
+                    }, {}));
+                    updateCityJsonStatus('Чтение завершено. Некоторые файлы могли не загрузиться.');
+                    saveFormDataToCache();
+                }
+            };
+            reader.readAsText(file, 'UTF-8');
+        });
+    }
+
+    function loadCityTemplateByKey(key) {
+        var entry = cityManifestEntries[key];
+        if (!entry) {
+            updateCityJsonStatus('Город не найден в манифесте.', true);
+            return;
+        }
+        if (entry.template) {
+            applyCityTemplate(entry.template);
+            document.getElementById('city_custom_block').classList.add('hidden');
+            updateCityJsonStatus('Шаблон города ' + (entry.label || key) + ' загружен из выбранной папки.');
+            saveFormDataToCache();
+            return;
+        }
+        var filePath = entry.file || key + '.json';
+        if (!filePath.includes('/') && !filePath.startsWith('Cidades/')) {
+            filePath = 'Cidades/' + filePath;
+        }
+        updateCityJsonStatus('Загружаю шаблон города: ' + filePath + '...');
+        fetch(filePath).then(function(response) {
+            if (!response.ok) {
+                throw new Error('Не удалось загрузить файл: ' + response.status);
+            }
+            return response.json();
+        }).then(function(template) {
+            applyCityTemplate(template);
+            document.getElementById('city_custom_block').classList.add('hidden');
+            updateCityJsonStatus('Шаблон города ' + (entry.label || key) + ' загружен.');
+            saveFormDataToCache();
+        }).catch(function(error) {
+            updateCityJsonStatus('Ошибка загрузки JSON: ' + (error.message || error), true);
+        });
+    }
+
+    function processCityManifest(manifest) {
+        var items = [];
+        if (!manifest) return;
+        if (Array.isArray(manifest)) {
+            items = manifest;
+        } else if (manifest.entries && Array.isArray(manifest.entries)) {
+            items = manifest.entries;
+        } else {
+            items = Object.keys(manifest).map(function(key) {
+                var item = manifest[key] || {};
+                return { key: key, label: item.label || key, file: item.file || key + '.json' };
+            });
+        }
+        var select = document.getElementById('city_preset_select');
+        var referenceOption = select.querySelector('option[value="custom"]');
+        items.forEach(function(item) {
+            if (!item.key || select.querySelector('option[value="' + item.key + '"]')) return;
+            cityManifestEntries[item.key] = item;
+            var option = document.createElement('option');
+            option.value = item.key;
+            option.textContent = item.label || item.key;
+            select.insertBefore(option, referenceOption);
+        });
+    }
+
+    function detectGitHubRepoContext() {
+        var host = window.location.host.toLowerCase();
+        var path = window.location.pathname.replace(/^\//, '').split('/');
+
+        if (host === 'raw.githubusercontent.com' && path.length >= 3) {
+            return { owner: path[0], repo: path[1], branch: path[2] };
+        }
+
+        if (host.endsWith('.github.io')) {
+            var owner = host.split('.')[0];
+            if (path.length === 0 || path[0] === '') {
+                return { owner: owner, repo: owner + '.github.io', branch: 'main' };
+            }
+            var repo = path[0];
+            return { owner: owner, repo: repo, branch: 'main' };
+        }
+
+        return null;
+    }
+
+    function fetchGitHubContents(owner, repo, branch, dirPath) {
+        var apiUrl = 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + dirPath + '?ref=' + branch;
+        return fetch(apiUrl, {
+            headers: {
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        }).then(function(response) {
+            if (!response.ok) {
+                return Promise.reject({ status: response.status, branch: branch });
+            }
+            return response.json();
+        });
+    }
+
+    function loadCityTemplatesManifest() {
+        fetch('Cidades/').then(function(response) {
+            if (!response.ok) {
+                throw new Error('Список файлов не доступен');
+            }
+            var contentType = response.headers.get('content-type') || '';
+            if (contentType.indexOf('text/html') !== -1) {
+                return response.text().then(function(htmlText) {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(htmlText, 'text/html');
+                    var links = Array.from(doc.querySelectorAll('a[href]')).map(function(a) {
+                        return a.getAttribute('href');
+                    });
+                    return links;
+                });
+            }
+            return response.text().then(function(text) {
+                var matches = text.match(/href=["']?([^"' >]+\.json)/gi) || [];
+                return matches.map(function(match) {
+                    return match.replace(/href=["']?/, '').replace(/['">]/g, '');
+                });
+            });
+        }).catch(function(originalError) {
+            var githubContext = detectGitHubRepoContext();
+            if (!githubContext) {
+                return Promise.reject(originalError);
+            }
+            return fetchGitHubContents(githubContext.owner, githubContext.repo, githubContext.branch, 'Cidades').catch(function(error) {
+                if (error.status === 404 && githubContext.branch === 'main') {
+                    return fetchGitHubContents(githubContext.owner, githubContext.repo, 'gh-pages', 'Cidades');
+                }
+                return Promise.reject(error);
+            }).then(function(items) {
+                return items.map(function(item) {
+                    return item.name;
+                });
+            });
+        }).then(function(files) {
+            if (!files || !files.length) {
+                throw new Error('Не найдены JSON-файлы в папке Cidades');
+            }
+            var jsonFiles = files
+                .map(function(name) { return name.trim(); })
+                .filter(function(name) {
+                    var lower = name.toLowerCase();
+                    return name && lower.endsWith('.json') && lower !== 'index.json' && lower !== 'cities.json';
+                });
+            jsonFiles = Array.from(new Set(jsonFiles));
+            if (!jsonFiles.length) {
+                throw new Error('Не найдено JSON-файлов, отличных от index.json');
+            }
+            updateCityJsonStatus('Найдено ' + jsonFiles.length + ' JSON-файлов в папке Cidades.');
+            jsonFiles.forEach(function(filename) {
+                var entry = {
+                    key: filename,
+                    label: filename.replace(/\.json$/i, ''),
+                    file: filename
+                };
+                cityManifestEntries[entry.key] = entry;
+            });
+            return Promise.all(jsonFiles.map(function(filename) {
+                var url = encodeURI('Cidades/' + filename);
+                return fetch(url).then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('Не удалось загрузить ' + filename);
+                    }
+                    return response.json().then(function(json) {
+                        var key = filename;
+                        if (json && json.label) {
+                            cityManifestEntries[key].label = json.label;
+                        }
+                    }).catch(function() {
+                        // ignore malformed JSON metadata
+                    });
+                }).catch(function() {
+                    // ignore load failures for individual files
+                });
+            })).then(function() {
+                processCityManifest(Object.values(cityManifestEntries).reduce(function(acc, item) {
+                    acc[item.key] = item;
+                    return acc;
+                }, {}));
+            });
+        }).catch(function(error) {
+            console.warn(error);
+            updateCityJsonStatus('Не удалось получить список JSON из папки Cidades. В GitHub Pages нужен публичный доступ и/или манифест.');
+        });
+    }
+
     // Переключение между стартовым экраном и конфигуратором
     function startConfigurator() {
         document.getElementById('startPage').classList.add('hidden');
@@ -808,6 +1254,7 @@
     function updateCacheRestoredNotice() {
             var notice = document.getElementById('cacheRestoredNotice');
             var clearBtn = document.getElementById('clearCacheBtn'); // Находим нашу кнопку
+            var startBtn = document.getElementById('startFormBtn');
             
             if (!notice) return;
             
@@ -816,6 +1263,10 @@
             
             if (clearBtn) {
                 clearBtn.classList.toggle('hidden', !formRestoredFromCache);
+            }
+            
+            if (startBtn) {
+                startBtn.textContent = formRestoredFromCache ? 'Продолжить заполнение' : 'Начать заполнение';
             }
         }
 
@@ -888,6 +1339,24 @@
         saveFormDataToCache();
     }
 
+    function syncApostilleQrNumber() {
+        var apIdxEl = document.getElementById('ap_idx');
+        var qrEl = document.getElementById('ap_qr_num');
+        if (!apIdxEl || !qrEl) return;
+        lastSyncedApIdx = apIdxEl.value;
+        if (!apQrNumManuallyEdited || qrEl.value === lastSyncedApIdx) {
+            qrEl.value = lastSyncedApIdx;
+        }
+        saveFormDataToCache();
+    }
+
+    function markApostilleQrNumberEdited() {
+        var qrEl = document.getElementById('ap_qr_num');
+        if (!qrEl) return;
+        apQrNumManuallyEdited = qrEl.value !== lastSyncedApIdx;
+        saveFormDataToCache();
+    }
+
     // Синхронизация имени владельца в Апостиле с именем ребенка
     function syncOwnerName() {
         var name = normalizeSpaces(document.getElementById('child_name').value).toUpperCase();
@@ -922,39 +1391,6 @@
         });
     }
 
-    function syncApostilleQrNumber() {
-        var apIdxEl = document.getElementById('ap_idx');
-        var qrEl = document.getElementById('ap_qr_num');
-        if (!apIdxEl || !qrEl) return;
-
-        var apIdx = apIdxEl.value;
-        if (!apQrNumManuallyEdited || qrEl.value === lastSyncedApIdx) {
-            qrEl.value = apIdx;
-            lastSyncedApIdx = apIdx;
-        }
-        saveFormDataToCache();
-    }
-
-    function markApostilleQrNumberEdited() {
-        var qrEl = document.getElementById('ap_qr_num');
-        if (!qrEl) return;
-        apQrNumManuallyEdited = qrEl.value !== lastSyncedApIdx;
-        saveFormDataToCache();
-    }
-
-    function initApostilleQrSyncState() {
-        var apIdxEl = document.getElementById('ap_idx');
-        var qrEl = document.getElementById('ap_qr_num');
-        if (!apIdxEl || !qrEl) return;
-
-        lastSyncedApIdx = apIdxEl.value;
-        if (!qrEl.value && apIdxEl.value) {
-            apQrNumManuallyEdited = false;
-            syncApostilleQrNumber();
-        } else {
-            apQrNumManuallyEdited = qrEl.value !== apIdxEl.value;
-        }
-    }
 
     function getFormFieldIds() {
         return [
@@ -962,6 +1398,7 @@
             'father_name','father_country','father_country_other','father_state','gfather_pat','gmother_pat',
             'mother_name','mother_country','mother_country_other','mother_state','gfather_mat','gmother_mat',
             'twins','dn_number','reg_date_picker','reg_date_text','notes_block','cartor_info','selo_digital','cartor_stamp','certify_block','officer_stamp','sorType','cartor_pay','state_pay','fee_pay','all_pay','receipt_num','custom_reason',
+            'city_preset_select','city_custom_name',
             'blank_number','ap_country','ap_signed_by','ap_role','ap_stamp_owner','ap_city','ap_date','ap_officer','ap_idx','ap_doc_owner','ap_qr_num','ap_check_code','ap_bottom_num'
         ];
     }
@@ -995,8 +1432,8 @@
             toggleCountry('father');
             toggleCountry('mother');
             toggleSorTypeDetails();
+            updateCityPresetBlock();
             updateBirthDatePartsFromPicker();
-            initApostilleQrSyncState();
             syncOwnerName();
             resizeAllTextareas();
         } catch (e) {
@@ -1053,23 +1490,19 @@
             {id: 'birth_state', label: 'Штат рождения'},
             {id: 'birth_hospital', label: 'Учреждение/госпиталь'},
             {id: 'child_gender', label: 'Пол ребенка'},
-            {id: 'father_name', label: 'ФИО отца'},
+            {id: 'father_name', label: 'Имя Фамилия отца'},
             {id: 'father_state', label: 'Штат отца'},
-            {id: 'gfather_pat', label: 'ФИО дедушки со стороны отца'},
-            {id: 'gmother_pat', label: 'ФИО бабушки со стороны отца'},
-            {id: 'mother_name', label: 'ФИО матери'},
+            {id: 'gfather_pat', label: 'Имя Фамилия дедушки со стороны отца'},
+            {id: 'gmother_pat', label: 'Имя Фамилия бабушки со стороны отца'},
+            {id: 'mother_name', label: 'Имя Фамилия матери'},
             {id: 'mother_state', label: 'Штат матери'},
-            {id: 'gfather_mat', label: 'ФИО дедушки со стороны матери'},
-            {id: 'gmother_mat', label: 'ФИО бабушки со стороны матери'},
+            {id: 'gfather_mat', label: 'Имя Фамилия дедушки со стороны матери'},
+            {id: 'gmother_mat', label: 'Имя Фамилия бабушки со стороны матери'},
             {id: 'dn_number', label: 'Номер декларации о живорождении'},
             {id: 'reg_date_text', label: 'Дата регистрации прописью'},
             {id: 'notes_block', label: 'Отметки / Внесенные записи'},
             {id: 'blank_number', label: 'Номер бланка'},
-            {id: 'ap_date', label: 'Дата апостилирования'},
-            {id: 'ap_idx', label: 'Порядковый номер апостиля'},
-            {id: 'ap_qr_num', label: 'Номер QR-кода апостиля'},
-            {id: 'ap_check_code', label: 'Контрольный проверочный код'},
-            {id: 'ap_bottom_num', label: 'Серийный номер снизу справа'}
+            {id: 'ap_date', label: 'Дата апостилирования'}
         ];
 
         fields.forEach(function(field) {
@@ -1138,6 +1571,7 @@
                 toggleSorTypeDetails();
                 syncOwnerName();
                 initTextareaAutoResize(); 
+                loadCityTemplatesManifest();
                 updateCacheRestoredNotice();
                 
             } finally {

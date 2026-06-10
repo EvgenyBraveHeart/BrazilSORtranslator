@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор города для Cidades</title>
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #1f2937;
+            background: #edf2f7;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            padding: 24px;
+            background: radial-gradient(circle at top left, rgba(66, 153, 225, 0.12), transparent 35%),
+                        radial-gradient(circle at bottom right, rgba(102, 126, 234, 0.14), transparent 30%),
+                        #eef2f7;
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 28px;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: clamp(2rem, 2.4vw, 2.4rem);
+            letter-spacing: -0.04em;
+            color: #1f2937;
+        }
+
+        p.lead {
+            margin: 0;
+            color: #4b5563;
+            line-height: 1.75;
+            max-width: 760px;
+        }
+
+        .section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 22px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            margin: 0 0 16px;
+            color: #111827;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+        }
+
+        .grid {
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(2, minmax(220px, 1fr));
+            align-items: start;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            background: #ffffff;
+            font-size: 0.96rem;
+            color: #1f2937;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        }
+
+        textarea {
+            min-height: 138px;
+            resize: vertical;
+        }
+
+        .full {
+            grid-column: 1 / -1;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 6px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 14px 20px;
+            cursor: pointer;
+            font-weight: 700;
+            color: #ffffff;
+            background: #4338ca;
+            transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 12px 24px rgba(67, 56, 202, 0.16);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            background: #4f46e5;
+        }
+
+        .btn-secondary {
+            background: #475569;
+            box-shadow: 0 12px 24px rgba(71, 85, 105, 0.14);
+        }
+
+        .btn-secondary:hover {
+            background: #334155;
+        }
+
+        .hint {
+            display: block;
+            margin-top: 6px;
+            color: #64748b;
+            font-size: 0.88rem;
+        }
+
+        .output-wrapper {
+            margin-top: 10px;
+        }
+
+        textarea#output {
+            min-height: 220px;
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: #0f172a;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+        }
+
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+            background: rgba(15, 23, 42, 0.04);
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        a {
+            color: #4338ca;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 820px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                justify-content: stretch;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="page-header">
+        <h1>Генератор нового города</h1>
+        <p class="lead">Заполните данные для нового города, чтобы получить готовый JSON-файл для Cidades.</p>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Основные данные</h2>
+        <div class="grid">
+            <div>
+                <label for="cityKey">Ключ города</label>
+                <input id="cityKey" placeholder="primer">
+                <span class="hint">Латиницей, без пробелов, например: santos</span>
+            </div>
+            <div>
+                <label for="cityLabel">Название города</label>
+                <input id="cityLabel" placeholder="Пример">
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Документы и место рождения</h2>
+        <div class="grid">
+            <div class="full">
+                <label for="birthHospital">Место рождения (Учреждение/Госпиталь)</label>
+                <input id="birthHospital" placeholder="Hospital Municipal Exemplo">
+            </div>
+            <div>
+                <label for="nateCity">Место рождения</label>
+                <input id="nateCity" placeholder="г. Пример">
+            </div>
+            <div>
+                <label for="nateState">Штат</label>
+                <input id="nateState" placeholder="Пример-штат">
+            </div>
+            <div>
+                <label for="birthCity">Город рождения</label>
+                <input id="birthCity" placeholder="г. Пример">
+            </div>
+            <div>
+                <label for="birthState">Штат рождения</label>
+                <input id="birthState" placeholder="Пример-штат">
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Тексты печатей и удостоверений</h2>
+        <div class="grid">
+            <div class="full">
+                <label for="cartorInfo">Сведения о Карторио</label>
+                <textarea id="cartorInfo" placeholder="Введите информацию о карторио"></textarea>
+            </div>
+            <div class="full">
+                <label for="cartorStamp">Текст штампа Карторио</label>
+                <textarea id="cartorStamp" placeholder="Введите текст штампа карторио"></textarea>
+            </div>
+            <div class="full">
+                <label for="certifyBlock">Блок удостоверения сотрудником</label>
+                <textarea id="certifyBlock" placeholder="Введите текст блока удостоверения сотрудником"></textarea>
+            </div>
+            <div class="full">
+                <label for="officerStamp">Текст штампа сотрудника</label>
+                <textarea id="officerStamp" placeholder="Введите текст штампа сотрудника"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Апостиль</h2>
+        <div class="grid">
+            <div class="full">
+                <label for="apCountry">Апостиль: страна</label>
+                <input id="apCountry" value="ФЕДЕРАТИВНАЯ РЕСПУБЛИКА БРАЗИЛИЯ">
+            </div>
+            <div>
+                <label for="apSignedBy">Кем подписан документ</label>
+                <input id="apSignedBy" placeholder="ФИО сотрудника">
+            </div>
+            <div>
+                <label for="apRole">Действующий в качестве</label>
+                <input id="apRole" placeholder="Сотрудник отдела ЗАГС">
+            </div>
+            <div>
+                <label for="apStampOwner">Скреплен печатью/штампом</label>
+                <input id="apStampOwner" placeholder="Текст штампа апостиля">
+            </div>
+            <div>
+                <label for="apCity">Город удостоверения</label>
+                <input id="apCity" placeholder="г. Пример">
+            </div>
+            <div>
+                <label for="apOfficer">Кем выдан апостиль</label>
+                <input id="apOfficer" placeholder="ФИО сотрудника">
+            </div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="btn" onclick="generateCityJson()">Сгенерировать JSON</button>
+        <button class="btn btn-secondary" onclick="copyOutput()">Скопировать</button>
+        <button class="btn btn-secondary" onclick="downloadJsonFile()">Скачать файл</button>
+    </div>
+
+    <div class="section output-wrapper">
+        <label for="output">Результат JSON</label>
+        <textarea id="output" readonly></textarea>
+        <span class="hint">Сохраните файл как <code><span id="previewName">primer</span>.json</code> и отправьте его <a href="https://t.me/Evgeny_BraveHeart" target="_blank">@Evgeny_BraveHeart</a> для добавления в список городов.</span>
+    </div>
+</div>
+<script>
+    function normalizeString(str) {
+        return (str || '').trim();
+    }
+    function generateCityJson() {
+        var data = {
+            label: normalizeString(document.getElementById('cityLabel').value),
+            birth_hospital: normalizeString(document.getElementById('birthHospital').value),
+            nate_city: normalizeString(document.getElementById('nateCity').value),
+            nate_state: normalizeString(document.getElementById('nateState').value),
+            birth_city: normalizeString(document.getElementById('birthCity').value),
+            birth_state: normalizeString(document.getElementById('birthState').value),
+            cartor_info: normalizeString(document.getElementById('cartorInfo').value),
+            cartor_stamp: normalizeString(document.getElementById('cartorStamp').value),
+            certify_block: normalizeString(document.getElementById('certifyBlock').value),
+            officer_stamp: normalizeString(document.getElementById('officerStamp').value),
+            ap_country: normalizeString(document.getElementById('apCountry').value),
+            ap_signed_by: normalizeString(document.getElementById('apSignedBy').value),
+            ap_role: normalizeString(document.getElementById('apRole').value),
+            ap_stamp_owner: normalizeString(document.getElementById('apStampOwner').value),
+            ap_city: normalizeString(document.getElementById('apCity').value),
+            ap_officer: normalizeString(document.getElementById('apOfficer').value)
+        };
+        var result = JSON.stringify(data, null, 4);
+        document.getElementById('output').value = result;
+        updatePreviewName();
+    }
+    function updatePreviewName() {
+        var key = normalizeString(document.getElementById('cityKey').value) || 'primer';
+        document.getElementById('previewName').textContent = key;
+    }
+    function copyOutput() {
+        var output = document.getElementById('output');
+        if (!output.value) {
+            alert('Сначала сгенерируйте JSON.');
+            return;
+        }
+        output.select();
+        document.execCommand('copy');
+        alert('JSON скопирован в буфер обмена. Сохраните его как файл Cidades/' + (document.getElementById('cityKey').value || 'primer') + '.json');
+    }
+    function downloadJsonFile() {
+        var output = document.getElementById('output').value;
+        if (!output) {
+            alert('Сначала сгенерируйте JSON.');
+            return;
+        }
+        var key = normalizeString(document.getElementById('cityKey').value) || 'primer';
+        var blob = new Blob([output], { type: 'application/json;charset=utf-8' });
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = key + '.json';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+    document.getElementById('cityKey').addEventListener('input', updatePreviewName);
+    document.getElementById('cityLabel').addEventListener('input', updatePreviewName);
+</script>
+</body>
+</html>
