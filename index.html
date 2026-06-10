@@ -709,7 +709,7 @@
 
             <div class="form-group">
                 <label>Блок удостоверения сотрудником:</label>
-                <textarea id="certify_block" style="min-height: 100px;" placeholder="Содержание свидетельства соответствует действительности. Удостоверяю.&#10;г. Сантус, Сан-Паулу, 22 декабря 2025 г.&#10;(Подпись)&#10;Виктор Угу Бриту Симоне Франса – Сотрудник отдела ЗАГС"></textarea>
+                <textarea id="certify_block" style="min-height: 100px;" placeholder="Содержание свидетельства соответствует действительности. Удостоверяю.&#10;гор. Сантус, Сан-Паулу,&#1022 декабря 2025 г.&#10;(Подпись)&#10;Виктор Угу Бриту Симоне Франса – Сотрудник отдела ЗАГС"></textarea>
             </div>
 
             <div class="form-group">
@@ -882,7 +882,7 @@
             birth_state: 'Сан-Паулу',
             cartor_info: 'Номер в Национальном реестре нотариальных и регистрационных учреждений № 122671\nОтдел регистрации актов гражданского состояния физических лиц г. Сантус – 2-й подокруг\nАлдир Паскоал Монте Беллу – сотрудник отдела ЗАГС\nАдрес: пр-т Ав. Вашингтон Луиз, 61, Вила Матиас г. Сантус, штат Сан-Паулу\nИндекс: 11050201, Телефон: (013) 3234-2811\nЭлектронная почта: registrocivil2@uol.com.br',
             cartor_stamp: '(штамп)\n2-й ПОДОКРУГ\nОТДЕЛ РЕГИСТРАЦИИ АКТОВ ГРАЖДАНСКОГО СОСТОЯНИЯ ФИЗИЧЕСКИХ ЛИЦ\nКАРТОРИО МОНТЕ БЕЛЛУ\nПР-Т АВ. ВАШИНГТОН ЛУИЗ, 61 (КАНАЛ 3)\nИНДЕКС 11050-201\nСАНТУС, САН-ПАУЛУ',
-            certify_block: 'Содержание свидетельства соответствует действительности. Удостоверяю.\nг. Сантус, Сан-Паулу, 22 декабря 2025 г.\n(Подпись)\nВиктор Угу Бриту Симоне Франса – Сотрудник отдела ЗАГС',
+            certify_block: 'Содержание свидетельства соответствует действительности. Удостоверяю.\nгор. Сантус, Сан-Паулу, \n22 декабря 2025 г.\n(Подпись)\nВиктор Угу Бриту Симоне Франса – Сотрудник отдела ЗАГС',
             officer_stamp: '(штамп)\nВиктор Угу Бриту Симоне Франса\nСотрудник отдела ЗАГС\n2-го подокруга г. Сантус, шт. Сан-Паулу',
             ap_country: 'ФЕДЕРАТИВНАЯ РЕСПУБЛИКА БРАЗИЛИЯ',
             ap_signed_by: 'ВИКТОР УГУ БРИТУ СИМОНЕ ФРАНСА',
@@ -1662,6 +1662,13 @@
     }
 
 
+    function formatDateDDMMYYYY(dateStr) {
+        if (!dateStr) return '';
+        var parts = dateStr.split('-');
+        if (parts.length !== 3) return dateStr;
+        return parts[2] + '.' + parts[1] + '.' + parts[0];
+    }
+
     function convertApDate() {
         var dateVal = document.getElementById('ap_date').value;
         if (dateVal) {
@@ -1824,7 +1831,7 @@
                 ap_role: document.getElementById('ap_role').value,
                 ap_stamp_owner: document.getElementById('ap_stamp_owner').value,
                 ap_city: document.getElementById('ap_city').value,
-                ap_date: document.getElementById('ap_date').value,
+                ap_date: formatDateDDMMYYYY(document.getElementById('ap_date').value),
                 ap_officer: document.getElementById('ap_officer').value,
                 ap_idx: document.getElementById('ap_idx').value,
                 ap_doc_owner: document.getElementById('ap_doc_owner').value,
